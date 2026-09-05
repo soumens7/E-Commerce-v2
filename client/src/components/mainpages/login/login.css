@@ -1,0 +1,98 @@
+/* Reset default margins */
+body, html {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  
+  /* Login Page Container */
+  .login-page {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(to right, #ece9e6, #ffffff);
+    padding: 1rem;
+  }
+  
+  /* Form Styling */
+  .login-page form {
+    background: #fff;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 400px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+  }
+  
+  /* Input fields */
+  .login-page input {
+    padding: 0.75rem 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border 0.3s;
+  }
+  
+  .login-page input:focus {
+    border-color: #3399cc;
+    outline: none;
+  }
+  
+  /* Button & Links Row */
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  
+  /* Login Button */
+  button {
+    flex: 1;
+    padding: 0.75rem;
+    background-color: #3399cc;
+    color: #fff;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s;
+  }
+  
+  button:hover {
+    background-color: #267aa5;
+  }
+  
+  /* Register Link */
+  .row a {
+    flex: 1;
+    text-align: center;
+    padding: 0.75rem;
+    background: #f2f2f2;
+    border-radius: 8px;
+    text-decoration: none;
+    color: #333;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  
+  .row a:hover {
+    background: #e0e0e0;
+  }
+  
+  /* Responsive Adjustments */
+  @media (max-width: 480px) {
+    .row {
+      flex-direction: column;
+    }
+  
+    button, .row a {
+      width: 100%;
+    }
+  }
+  

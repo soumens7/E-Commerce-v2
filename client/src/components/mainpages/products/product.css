@@ -1,0 +1,55 @@
+/* Product grid */
+.products {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 40px;
+}
+/* Filter bar at top */
+.filter-bar {
+  position: sticky;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
+  gap: 1rem;
+  background: #f9f9f9;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  top: 70px; /* Adjust based on your navbar height */
+  z-index: 10;
+}
+
+/* Inputs + Dropdowns */
+.filter-bar input[type="text"],
+.filter-bar select {
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 15px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: #fff;
+  transition: border 0.3s ease;
+}
+
+.filter-bar input:focus,
+.filter-bar select:focus {
+  border-color: #007bff;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.2);
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filter-bar input,
+  .filter-bar select {
+    width: 100%;
+  }
+}
+@import url("../utils/ProductList/productList.css");

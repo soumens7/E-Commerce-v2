@@ -6,7 +6,7 @@ Check out the live version of the project [here](https://mern-e-commerce-app-tau
 
 ![Website Demo](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNjFtMTU5djVtZmtvdDZ5enE1dm8yczE1d29iajlqbGx0bGw2YWhyMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/vwuggOp6YZj2W9Z7H4/giphy.gif)
 
-[![CI](https://github.com/soumens7/MERN-E-Commerce-App/actions/workflows/ci.yml/badge.svg)](https://github.com/soumens7/MERN-E-Commerce-App/actions)
+[![CI](https://github.com/soumens7/E-Commerce-v2/actions/workflows/ci.yml/badge.svg)](https://github.com/soumens7/E-Commerce-v2/actions)
 
 ## 🚀 Features
 

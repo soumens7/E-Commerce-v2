@@ -1,11 +1,14 @@
-const categoryModel = require("../models/categoryModel");
-const { create } = require("../models/userModel");
-const Category = require("../models/categoryModel");
+const prisma = require("../config/prisma");
 
 const categoryControl = {
   getCategories: async (req, res) => {
     try {
-      const categories = await categoryModel.find();
+      const categories = await prisma.category.findMany({
+        orderBy: {
+          created_at: "desc",
+        },
+      });
+
       res.json(categories);
     } catch (err) {
       return res.status(500).json({ msg: err.message });
@@ -14,23 +17,44 @@ const categoryControl = {
   createCategory: async (req, res) => {
     try {
       const { name } = req.body;
-      const category = await Category.findOne({ name });
 
-      if (category)
-        return res.status(400).json({ msg: "This category already exists." });
+      const category = await prisma.category.findUnique({
+        where: {
+          name,
+        },
+      });
 
-      const newCategory = new Category({ name });
+      if (category) {
+        return res.status(400).json({
+          msg: "This category already exists.",
+        });
+      }
 
-      await newCategory.save();
-      res.json({ msg: "Created a category" });
+      const newCategory = await prisma.category.create({
+        data: {
+          name,
+        },
+      });
+
+      res.json({
+        msg: "Created a category",
+        category: newCategory,
+      });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
   },
   deleteCategory: async (req, res) => {
     try {
-      await Category.findByIdAndDelete(req.params.id);
-      res.json({ msg: "Deleted a category" });
+      await prisma.category.delete({
+        where: {
+          id: req.params.id,
+        },
+      });
+
+      res.json({
+        msg: "Deleted a category",
+      });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
@@ -38,9 +62,20 @@ const categoryControl = {
   updateCategory: async (req, res) => {
     try {
       const { name } = req.body;
-      await Category.findOneAndUpdate({ _id: req.params.id }, { name });
 
-      res.json({ msg: "Updated a category" });
+      const updatedCategory = await prisma.category.update({
+        where: {
+          id: req.params.id,
+        },
+        data: {
+          name,
+        },
+      });
+
+      res.json({
+        msg: "Updated a category",
+        category: updatedCategory,
+      });
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }

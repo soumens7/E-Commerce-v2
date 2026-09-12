@@ -1,10 +1,13 @@
-const Users = require("../models/userModel");
+const prisma = require("../config/prisma");
 
 const authAdmin = async (req, res, next) => {
   try {
     // Get user information by ID
-    const user = await Users.findOne({
-      _id: req.user.id,
+    // Prisma
+    const user = await prisma.user.findUnique({
+      where: {
+        id: req.user.id,
+      },
     }); // Find user by ID in the database
     if (user.role === 0)
       return res.status(400).json({ msg: "Admin resources access denied." }); // If user is not an admin, return an error

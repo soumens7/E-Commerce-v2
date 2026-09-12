@@ -1,4 +1,4 @@
-const Users = require("../models/userModel"); // Importing the User model
+const prisma = require("../config/prisma"); // Importing the User model
 const bcrypt = require("bcrypt"); // Importing bcrypt for password hashing
 const jwt = require("jsonwebtoken"); // Importing JSON Web Token for authentication
 
@@ -15,7 +15,9 @@ const userControl = {
       }
 
       // Check if the user already exists in the database
-      const user = await Users.findOne({ email });
+      const user = await prisma.user.findUnique({
+        where: { email },
+      });
       if (user) return res.status(400).json({ msg: "Email already exists." });
 
       // Ensure password length is at least 6 characters
@@ -30,14 +32,17 @@ const userControl = {
       const hashedPassword = await bcrypt.hash(password, salt);
 
       // Create new user instance
-      const newUser = new Users({ name, email, password: hashedPassword });
-
-      // Save new user to the database
-      await newUser.save();
+      const newUser = await prisma.user.create({
+        data: {
+          name,
+          email,
+          password: hashedPassword,
+        },
+      });
 
       // Create JWT access and refresh tokens
-      const accessToken = createAccessToken({ id: newUser._id });
-      const refreshToken = createRefreshToken({ id: newUser._id });
+      const accessToken = createAccessToken({ id: newUser.id });
+      const refreshToken = createRefreshToken({ id: newUser.id });
       console.log("Setting cookie with refreshToken:", refreshToken);
       // Store refresh token in HTTP-only cookie for security
       // res.cookie("refreshtoken", refreshToken, {
@@ -90,7 +95,9 @@ const userControl = {
       const { email, password } = req.body;
 
       // Find user by email
-      const user = await Users.findOne({ email });
+      const user = await prisma.user.findUnique({
+        where: { email },
+      });
 
       // Check if user exists
       if (!user) return res.status(400).json({ msg: "User does not exist." });
@@ -100,8 +107,8 @@ const userControl = {
       if (!isMatch) return res.status(400).json({ msg: "Incorrect password." });
 
       // Generate JWT access and refresh tokens
-      const accessToken = createAccessToken({ id: user._id });
-      const refreshToken = createRefreshToken({ id: user._id });
+      const accessToken = createAccessToken({ id: user.id });
+      const refreshToken = createRefreshToken({ id: user.id });
 
       console.log("Setting cookie with refreshToken:", refreshToken);
       // Store refresh token in HTTP-only cookie
@@ -136,8 +143,21 @@ const userControl = {
   // Controller function to fetch user data
   getUser: async (req, res) => {
     try {
-      // Find user by ID and exclude the password field
-      const user = await Users.findById(req.user.id).select("-password");
+      const user = await prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          role: true,
+          cart: true,
+          history: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
 
       // Check if user exists
       if (!user) return res.status(400).json({ msg: "User does not exist." });
@@ -150,11 +170,21 @@ const userControl = {
   },
   addToCart: async (req, res) => {
     try {
-      const user = await Users.findById(req.user.id);
+      const user = await prisma.user.findUnique({
+        where: {
+          id: req.user.id,
+        },
+      });
       if (!user) return res.status(400).json({ msg: "User does not exist." });
 
-      user.cart = req.body.cart;
-      await user.save();
+      await prisma.user.update({
+        where: {
+          id: req.user.id,
+        },
+        data: {
+          cart: req.body.cart,
+        },
+      });
       res.json({ msg: "Cart updated successfully!" });
     } catch (err) {
       return res.status(500).json({ msg: err.message });

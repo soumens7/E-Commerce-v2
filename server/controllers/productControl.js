@@ -1,91 +1,111 @@
-const Products = require("../models/productModel");
-
-// Filter, sorting and paginating
-class APIfeatures {
-  constructor(query, queryString) {
-    this.query = query; // Mongoose query object (e.g., Products.find())
-    this.queryString = queryString; // Query parameters from request (req.query)
-  }
-
-  /**
-   * Filters out specified fields (e.g., page, sort, limit) from the query
-   * and converts MongoDB query operators (gte, gt, lt, lte, regex)
-   * to their proper format.
-   */
-  filtering() {
-    // Clone the query string to avoid modifying the original req.query object
-    const queryObj = { ...this.queryString };
-    console.log(queryObj); // Debugging: Check what query parameters were received
-
-    // List of fields to exclude from filtering (used for pagination & sorting)
-    const excludedFields = ["page", "sort", "limit"];
-    excludedFields.forEach((el) => delete queryObj[el]); // Remove them from queryObj
-
-    //console.log(queryObj); // Debugging: Check the modified query object
-    // Convert query object into a JSON string
-    let queryStr = JSON.stringify(queryObj);
-    //console.log(queryObj.queryStr); // Debugging: Check the JSON string
-
-    // Replace certain operators with MongoDB syntax (e.g., gte → $gte)
-    queryStr = queryStr.replace(
-      /\b(gte|gt|lt|lte|regex)\b/g,
-      (match) => "$" + match
-    );
-
-    // Apply the modified filters to the query
-    this.query.find(JSON.parse(queryStr));
-
-    return this; // Return the instance for method chaining
-  }
-
-  /**
-   * Sorts the query results based on a specified field
-   * Example usage: ?sort=price or ?sort=-createdAt (descending)
-   */
-  sorting() {
-    if (this.queryString.sort) {
-      // Convert comma-separated values into space-separated string (e.g., "price,-rating")
-      const sortBy = this.queryString.sort.split(",").join(" ");
-      console.log(sortBy); // Debugging: Check the sorting criteria
-      this.query = this.query.sort(sortBy); // Apply sorting to Mongoose query
-      console.log(sortBy); // Debugging: Check the sorting criteria
-    } else {
-      this.query = this.query.sort("-createdAt"); // Default sorting: newest first
-    }
-
-    return this;
-  }
-
-  /**
-   * Implements pagination by skipping and limiting results.
-   * Example usage: ?page=2&limit=10
-   */
-  paginating() {
-    const page = this.queryString.page * 1 || 1; // Convert page to a number (default: 1)
-    const limit = this.queryString.limit * 1 || 10; // Convert limit to a number (default: 10)
-    const skip = (page - 1) * limit; // Calculate the number of documents to skip
-
-    this.query = this.query.skip(skip).limit(limit); // Apply pagination
-
-    return this;
-  }
-}
+const prisma = require("../config/prisma");
 
 const productControl = {
+  // Get products with filtering, sorting, and pagination
   getProducts: async (req, res) => {
     try {
-      console.log(req.query);
-      const features = new APIfeatures(Products.find(), req.query)
-        .filtering()
-        .sorting()
-        .paginating();
-      const products = await features.query;
+      const { page = 1, limit = 50, sort, category, title } = req.query;
 
-      res.json({ result: products.length, products });
+      const pageNumber = Number(page);
+      const limitNumber = Number(limit);
+
+      const where = {};
+
+      if (category) {
+        where.category = category;
+      }
+
+      if (title) {
+        where.title = {
+          contains: title,
+          mode: "insensitive",
+        };
+      }
+
+      let orderBy = {
+        createdAt: "desc",
+      };
+
+      if (sort) {
+        const descending = sort.startsWith("-");
+        const field = descending ? sort.substring(1) : sort;
+
+        orderBy = {
+          [field]: descending ? "desc" : "asc",
+        };
+      }
+
+      const products = await prisma.product.findMany({
+        where,
+        orderBy,
+        skip: (pageNumber - 1) * limitNumber,
+        take: limitNumber,
+      });
+
+      // Keep the frontend compatible with the old API.
+      // Your database stores images as a JSON array,
+      // while the old frontend expects product.image.
+      const formattedProducts = products.map((product) => ({
+        ...product,
+        image: Array.isArray(product.images)
+          ? product.images[0]
+          : product.images,
+      }));
+
+      res.json(formattedProducts);
     } catch (err) {
       return res.status(500).json({ msg: err.message });
     }
   },
+  getProduct: async (req, res) => {
+    try {
+      const product = await prisma.product.findUnique({
+        where: {
+          id: req.params.id,
+        },
+      });
+
+      if (!product) {
+        return res.status(404).json({ msg: "Product does not exist." });
+      }
+
+      const formattedProduct = {
+        ...product,
+        image: Array.isArray(product.images)
+          ? product.images[0]
+          : product.images,
+      };
+
+      res.json(formattedProduct);
+    } catch (err) {
+      return res.status(500).json({ msg: err.message });
+    }
+  },
+  getProductById: async (req, res) => {
+    try {
+      const product = await prisma.product.findUnique({
+        where: {
+          id: req.params.id,
+        },
+      });
+  
+      if (!product) {
+        return res.status(404).json({
+          msg: "Product not found.",
+        });
+      }
+  
+      res.json(product);
+    } catch (err) {
+      console.error("Get product error:", err);
+  
+      return res.status(500).json({
+        msg: err.message,
+      });
+    }
+  },
+
+  // Create product
   createProduct: async (req, res) => {
     try {
       const {
@@ -98,54 +118,138 @@ const productControl = {
         category,
       } = req.body;
 
-      if (!images) return res.status(400).json({ msg: "No image upload" });
+      if (!product_id || !title || !price || !description || !category) {
+        return res.status(400).json({
+          msg: "Please provide all required product fields.",
+        });
+      }
 
-      const product = await Products.findOne({ product_id });
+      if (!images) {
+        return res.status(400).json({
+          msg: "No image upload",
+        });
+      }
 
-      if (product)
-        return res.status(400).json({ msg: "This product already exists." });
-
-      const newProduct = new Products({
-        product_id,
-        title: title.toLowerCase(),
-        price,
-        description,
-        content,
-        images,
-        category,
+      // Check whether product already exists
+      const product = await prisma.product.findUnique({
+        where: {
+          product_id,
+        },
       });
 
-      await newProduct.save(); // Save to MongoDB
-      res.json({ msg: "Product created successfully!", newProduct });
+      if (product) {
+        return res.status(400).json({
+          msg: "This product already exists.",
+        });
+      }
+
+      const newProduct = await prisma.product.create({
+        data: {
+          product_id,
+          title: title.toLowerCase(),
+          price: Number(price),
+          description,
+          content: content || "",
+          images,
+          category,
+        },
+      });
+
+      res.json({
+        msg: "Product created successfully!",
+        newProduct,
+      });
     } catch (err) {
+      console.error("Create product error:", err);
       return res.status(500).json({ msg: err.message });
     }
   },
+  getCategories: async (req, res) => {
+    try {
+      const categories = await prisma.product.findMany({
+        distinct: ["category"],
+        select: {
+          category: true,
+        },
+        orderBy: {
+          category: "asc",
+        },
+      });
+
+      const categoryNames = categories.map((item) => item.category);
+
+      res.json(categoryNames);
+    } catch (err) {
+      console.error("Get categories error:", err);
+
+      return res.status(500).json({
+        msg: err.message,
+      });
+    }
+  },
+
+  // Delete product
   deleteProduct: async (req, res) => {
     try {
-      await Products.findByIdAndDelete(req.params.id);
-      res.json({ msg: "Deleted a product" });
+      await prisma.product.delete({
+        where: {
+          id: req.params.id,
+        },
+      });
+
+      res.json({
+        msg: "Deleted a product",
+      });
     } catch (err) {
+      console.error("Delete product error:", err);
       return res.status(500).json({ msg: err.message });
     }
   },
+
+  // Update product
   updateProduct: async (req, res) => {
     try {
       const { title, price, description, content, images, category } = req.body;
-      //if (!images) return res.status(400).json({ msg: "No image upload" });
-      await Products.findOneAndUpdate(
-        { _id: req.params.id },
-        {
-          title: title.toLowerCase(),
-          price,
-          description,
-          content,
-          images,
-          category,
-        }
-      );
-      res.json({ msg: "Updated a product" });
+
+      const data = {};
+
+      if (title !== undefined) {
+        data.title = title.toLowerCase();
+      }
+
+      if (price !== undefined) {
+        data.price = Number(price);
+      }
+
+      if (description !== undefined) {
+        data.description = description;
+      }
+
+      if (content !== undefined) {
+        data.content = content;
+      }
+
+      if (images !== undefined) {
+        data.images = images;
+      }
+
+      if (category !== undefined) {
+        data.category = category;
+      }
+
+      const updatedProduct = await prisma.product.update({
+        where: {
+          id: req.params.id,
+        },
+        data,
+      });
+
+      res.json({
+        msg: "Updated a product",
+        product: updatedProduct,
+      });
     } catch (err) {
+      console.error("Update product error:", err);
       return res.status(500).json({ msg: err.message });
     }
   },

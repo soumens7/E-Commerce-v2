@@ -22,7 +22,7 @@ function Footer() {
 
         <div className="footer-col">
           <h4>Make Money with Us</h4>
-          <Link to="/">Sell on MERN Mart</Link>
+          <Link to="/">Sell on Shopping Mart</Link>
           <Link to="/">Affiliate Program</Link>
           <Link to="/">Advertise</Link>
         </div>

@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "products" ALTER COLUMN "title" SET DATA TYPE VARCHAR(255);
+
+-- AlterTable
+ALTER TABLE "users" ALTER COLUMN "name" SET DATA TYPE VARCHAR(255);

@@ -6,12 +6,14 @@ function ProductAPI() {
 
   useEffect(() => {
     axios
-      .get("/api/products", { withCredentials: false}) // talking to your backend
+      .get("/api/products", { withCredentials: false })
       .then((res) => {
         console.log("API Response:", res.data);
-        setProducts(res.data);
+        setProducts(res.data.products);
       })
-      .catch((error) => console.error("Error fetching products:", error));
+      .catch((error) => {
+        console.error("Error fetching products:", error);
+      });
   }, []);
 
   return { products };

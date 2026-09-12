@@ -12,7 +12,7 @@ const Header = () => {
   console.log("State:", state); // Log the state object
   const [isLogged, setIsLogged] = state.userAPI.isLogged;
   const [isAdmin, setIsAdmin] = state.userAPI.isAdmin;
-  const [cart] = state.userAPI.cart;
+  const [cart, setCart] = state.userAPI.cart;
   const itemCount = cart.reduce((acc, item) => acc + (item.quantity || 1), 0);
   const cartIconRef = useRef(null);
   const [animate, setAnimate] = useState(false);
@@ -26,12 +26,17 @@ const Header = () => {
   }, [itemCount]);
 
   const logoutUser = async () => {
-    await axios.get("/user/logout");
+    setIsAdmin(false);
+    setIsLogged(false);
+    setCart([]);
 
     localStorage.clear();
 
-    setIsAdmin(false);
-    setIsLogged(false);
+    try {
+      await axios.get("/user/logout");
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
   };
 
   const adminRouter = () => {
@@ -69,7 +74,7 @@ const Header = () => {
 
       <div className="logo">
         <h1>
-          <Link to="/">{isAdmin ? "Admin" : "MERN Shopping Center"}</Link>
+          <Link to="/">{isAdmin ? "Admin" : "Shopping Center"}</Link>
         </h1>
       </div>
 
@@ -78,14 +83,14 @@ const Header = () => {
           <Link to="/">{isAdmin ? "Products" : "Shop"}</Link>
         </li>
         <li>
-        {isAdmin && adminRouter()}
-        {isLogged ? (
-          loggedRouter()
-        ) : (
-          <button className="header-btn">
-            <Link to="/login">Login / Register</Link>
-          </button>
-        )}
+          {isAdmin && adminRouter()}
+          {isLogged ? (
+            loggedRouter()
+          ) : (
+            <button className="header-btn">
+              <Link to="/login">Login / Register</Link>
+            </button>
+          )}
         </li>
         <li>
           <MdClose size={30} className="menu" />

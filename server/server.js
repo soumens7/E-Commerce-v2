@@ -17,7 +17,7 @@ app.get("/debug-cookies", (req, res) => {
 });
 
 // CORS middleware
-const allowedOrigins = ["http://localhost:3000"];
+const allowedOrigins = ["https://e-commerce-v2-peach.vercel.app/"];
 app.use(
   cors({
     origin: allowedOrigins,

@@ -20,7 +20,7 @@ const config: runtime.GetPrismaClientConfig = {
   "clientVersion": "7.10.0",
   "engineVersion": "0edf323efd1d98336f3f0a68684b56f689b900d3",
   "activeProvider": "postgresql",
-  "inlineSchema": "generator client {\n  provider = \"prisma-client\"\n  output   = \"../generated/prisma\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id        String   @id @default(uuid()) @db.Uuid\n  name      String   @db.VarChar(255)\n  email     String   @unique\n  password  String\n  role      Int      @default(0)\n  cart      Json     @default(\"[]\")\n  history   Json     @default(\"[]\")\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"users\")\n}\n\nmodel Product {\n  id          String   @id @default(uuid()) @db.Uuid\n  product_id  String   @unique\n  title       String   @db.VarChar(255)\n  price       Decimal  @db.Decimal(12, 2)\n  description String   @db.VarChar(2000)\n  content     String\n  images      Json\n  category    String\n  checked     Boolean  @default(false)\n  sold        Int      @default(0)\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  @@map(\"products\")\n}\n\nmodel Category {\n  id        String   @id @default(uuid()) @db.Uuid\n  name      String   @unique\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"categories\")\n}\n\nmodel Order {\n  id        String   @id @default(uuid()) @db.Uuid\n  userId    String\n  orderId   String\n  paymentId String\n  amount    Decimal  @db.Decimal(12, 2)\n  cart      Json\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"orders\")\n}\n",
+  "inlineSchema": "generator client {\n  provider     = \"prisma-client\"\n  output       = \"../generated/prisma\"\n  moduleFormat = \"cjs\"\n}\n\ndatasource db {\n  provider = \"postgresql\"\n}\n\nmodel User {\n  id        String   @id @default(uuid()) @db.Uuid\n  name      String   @db.VarChar(255)\n  email     String   @unique\n  password  String\n  role      Int      @default(0)\n  cart      Json     @default(\"[]\")\n  history   Json     @default(\"[]\")\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"users\")\n}\n\nmodel Product {\n  id          String   @id @default(uuid()) @db.Uuid\n  product_id  String   @unique\n  title       String   @db.VarChar(255)\n  price       Decimal  @db.Decimal(12, 2)\n  description String   @db.VarChar(2000)\n  content     String\n  images      Json\n  category    String\n  checked     Boolean  @default(false)\n  sold        Int      @default(0)\n  createdAt   DateTime @default(now())\n  updatedAt   DateTime @updatedAt\n\n  @@map(\"products\")\n}\n\nmodel Category {\n  id        String   @id @default(uuid()) @db.Uuid\n  name      String   @unique\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"categories\")\n}\n\nmodel Order {\n  id        String   @id @default(uuid()) @db.Uuid\n  userId    String\n  orderId   String\n  paymentId String\n  amount    Decimal  @db.Decimal(12, 2)\n  cart      Json\n  createdAt DateTime @default(now())\n  updatedAt DateTime @updatedAt\n\n  @@map(\"orders\")\n}\n",
   "runtimeDataModel": {
     "models": {},
     "enums": {},
@@ -45,10 +45,10 @@ async function decodeBase64AsWasm(wasmBase64: string): Promise<WebAssembly.Modul
 }
 
 config.compilerWasm = {
-  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.mjs"),
+  getRuntime: async () => await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.js"),
 
   getQueryCompilerWasmModule: async () => {
-    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.wasm-base64.mjs")
+    const { wasm } = await import("@prisma/client/runtime/query_compiler_fast_bg.postgresql.wasm-base64.js")
     return await decodeBase64AsWasm(wasm)
   },
 

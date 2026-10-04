@@ -20,6 +20,7 @@ app.get("/debug-cookies", (req, res) => {
 const allowedOrigins = [
   "http://localhost:3000",
   "https://e-commerce-v2-peach.vercel.app",
+  "https://e-commerce-v2-docker-front-end.onrender.com",
 ];
 
 app.use(

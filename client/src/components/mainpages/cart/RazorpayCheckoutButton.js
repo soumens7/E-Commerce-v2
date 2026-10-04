@@ -34,7 +34,7 @@ const RazorpayCheckoutButton = ({ cart }) => {
       amount: order.amount,
       currency: "INR",
       order_id: order.id,
-      name: "MERN Shop",
+      name: "PERN Shop",
       description: "Order Payment",
       handler: async function (response) {
         try {

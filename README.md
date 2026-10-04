@@ -2,7 +2,7 @@
 
 A full-stack e-commerce web application built using React, Node.js, Express.js, PostgreSQL, and Prisma. Features authentication, product display, category filtering, cart functionality, and secure token management.
 
-Check out the live version of the project [here](https://e-commerce-v2-peach.vercel.app/)
+Check out the live version of the project [here](https://e-commerce-v2-docker-front-end.onrender.com)
 
 ![Website Demo](https://media.giphy.com/media/w5PyNbZdeyqtYgtSFr/giphy.gif)
 
@@ -10,61 +10,78 @@ Check out the live version of the project [here](https://e-commerce-v2-peach.ver
 
 ## 🚀 Features
 
-- 🔐 Secure Auth: JWT (Access + Refresh Token) with HttpOnly cookies
-- 👤 User Login, Register, Logout
+- 🔐 Secure Authentication — JWT-based access and refresh token authentication with HttpOnly cookies
+- 👤 User Management — Register, login, and logout
 - 🛒 Add to Cart with Quantity Management
-- 💾 Cart Saved to DB per User
-- 📦 Product Display + Filtering + Sorting + Pagination
-- 📁 Admin Dashboard for Categories & Products
-- 🖼️ Product Images
-- 💳 Razorpay Integration (Test & Live Ready)
-- 🔄 Auto Token Refresh on Load
-- 🔒 Protected Routes (Admin-only Access)
-- 🌍 Fully CORS-safe Deployment
-- 🧪 Token Expiry Retry Handling
+- 💾 Persistent Cart — Cart data stored in PostgreSQL per user
+- 📦 Product Catalogue — Product display, filtering, sorting, searching, and pagination
+- 📁 Admin Dashboard — Manage products and categories
+- 🖼️ Product Images — Product image support
+- 💳 Razorpay Integration — Payment processing with test/live mode support
+- 🔄 Automatic Token Refresh — Handles access-token expiration and refresh
+- 🔒 Protected Routes — Admin-only access for protected operations
+- 🌍 CORS Configuration — Configured for cross-origin frontend/backend communication
+- 🧪 Token Expiry Handling — Automatic retry handling for expired authentication tokens
+- 🐳 Dockerized Application — Frontend and backend containerized using Docker
+- ⚙️ Docker Compose — Run frontend and backend together locally
 
 ---
 
 ## 📦 Tech Stack
 
 **Frontend**:  
-React, Context API, Axios, Razorpay Checkout, CSS
+React, Context API, Axios, Razorpay Checkout, CSS, Nginx
 
 **Backend**:  
 Node.js, Express.js, Prisma, PostgreSQL, Razorpay, JWT, Bcrypt, Cookie-Parser, CORS
 **Database**: PostgreSQL with Prisma ORM
+**DevOps & Deployment**: Docker, Docker Compose, Nginx, Render
 
-**Security**: JWT, HttpOnly Cookies, CORS, Environment Variables
+**Security**: JWT, HttpOnly Cookies, CORS, Environment Variables, Protected routes
 
 ---
 
 ## 🌐 Project Structure
 
 ```txt
-client/
-├── src/
-│   ├── API/
-│   ├── components/
-│   ├── pages/
-│   ├── utils/
-│   ├── GlobalState.js
-│   └── App.js
-server/
-├── controllers/
-├── middleware/
-├── models/
-├── routes/
-├── scripts/
-│   └── importProducts.js
-├── config/
-│   └── prisma.js
-├── prisma/
-│   ├── schema.prisma
-│   └── migrations/
-├── generated/
-│   └── prisma/
-├── server.js
-└── .env
+ecommerce-v2-pg/
+├── client/
+│   ├── src/
+│   │   ├── API/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── utils/
+│   │   ├── GlobalState.js
+│   │   └── App.js
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   ├── package.json
+│   └── package-lock.json
+│
+├── server/
+│   ├── controllers/
+│   ├── middleware/
+│   ├── routes/
+│   ├── scripts/
+│   │   └── importProducts.js
+│   ├── config/
+│   │   └── prisma.js
+│   ├── prisma/
+│   │   ├── schema.prisma
+│   │   └── migrations/
+│   ├── Dockerfile
+│   ├── .dockerignore
+│   ├── prisma.config.ts
+│   ├── server.js
+│   ├── package.json
+│   └── package-lock.json
+│
+├── .env
+├── .gitignore
+├── docker-compose.yml
+└── README.md
+
+Environment files such as .env are excluded from version control.
 ```
 
 ## 🗄️ Database
@@ -96,7 +113,7 @@ This allows the application to serve products from its own database instead of r
 
 ## 🌐 Product API
 
-The frontend communicates with the Express backend for product data.
+The frontend communicates with the Express backend for product-related operations.
 
 ### Endpoints
 
@@ -122,7 +139,7 @@ The product listing API supports:
 
 ## Local Development
 
-git clone [https://github.com/yourname/ecommerce-app.git](https://github.com/soumens7/MERN-E-Commerce-App.git)
+git clone [https://github.com/yourname/ecommerce-app.git](https://github.com/soumens7/E-Commerce-v2.git)
 
 ## ⚙️ Client Setup
 
@@ -141,11 +158,13 @@ npm run dev
 ## client/.env
 
 REACT_APP_API_URL=http://localhost:4000
+REACT_APP_RAZORPAY_KEY_ID=your_razorpay_key_id
 
 ## server/.env
 
 PORT=4000  
 CLIENT_URL=http://localhost:3000  
+DATABASE_URL=your_postgresql_connection_string
 ACCESS_TOKEN_SECRET=your_jwt_access_secret  
 REFRESH_TOKEN_SECRET=your_jwt_refresh_secret  
 RAZORPAY_KEY_ID=your_test_key_id  
@@ -177,16 +196,151 @@ Open Prisma Studio:
 npx prisma studio
 ```
 
-# 📦 Deployment (Vercel + Render)
+# 🐳 Docker
 
-✅ Frontend: Deploy to Vercel
+The application is containerized using Docker.
 
-✅ Backend + DB: Deploy to Render
+The frontend and backend each have their own Dockerfile:
 
-🛠️ Be sure to set all .env variables in both environments
+client/Dockerfile
+server/Dockerfile
 
-⚠️ Set Razorpay keys properly for Test/Live Mode
+The frontend uses a multi-stage Docker build:
 
-# Contributions
+Node.js
+↓
+React production build
+↓
+Nginx
+↓
+Static frontend
 
-Pull requests are welcome! For major changes, please open an issue first.
+The backend runs as a Node.js container:
+
+Node.js
+↓
+Express
+↓
+Prisma
+↓
+PostgreSQL
+
+## Docker Compose
+
+Docker Compose is used to run the frontend and backend together.
+
+The PostgreSQL database remains externally hosted using Neon.
+
+Start the application
+
+From the project root:
+
+docker compose up --build
+
+The services are exposed at:
+
+Frontend:
+http://localhost:3000
+
+Backend:
+http://localhost:4000
+Stop the application
+docker compose down
+
+View running containers
+docker compose ps
+
+View backend logs
+docker compose logs -f backend
+
+View frontend logs
+docker compose logs -f frontend
+
+## Docker Architecture
+
+                     Browser
+                        │
+                        │ :3000
+                        ▼
+              ┌──────────────────┐
+              │ Frontend Container│
+              │ React + Nginx     │
+              └────────┬─────────┘
+                       │
+                       │ :4000
+                       ▼
+              ┌──────────────────┐
+              │ Backend Container │
+              │ Node + Express    │
+              │ Prisma            │
+              └────────┬─────────┘
+                       │
+                       ▼
+              ┌──────────────────┐
+              │ Neon PostgreSQL   │
+              └──────────────────┘
+
+# 📦 Deployment
+
+The application is containerized and deployed using Docker.
+
+### Frontend
+
+- Dockerized React application
+- React production build generated during the Docker image build
+- Nginx serves the generated static files
+- Deployed as a Docker-based service on Render
+
+## Backend
+
+- Dockerized Node.js/Express application
+- Prisma ORM
+- PostgreSQL database hosted on Neon
+- Deployed as a Docker-based Web Service on Render
+
+## Database
+
+- PostgreSQL
+- Hosted on Neon
+
+## CI
+
+- GitHub Actions is used for continuous integration.
+- The CI workflow is available at:
+  .github/workflows/ci.yml
+
+GitHub Actions is used for continuous integration.
+
+# 💳 Razorpay
+
+The application integrates Razorpay for payment processing.
+
+The frontend uses the Razorpay Key ID to initialize the checkout experience.
+
+The backend uses:
+
+RAZORPAY_KEY_ID
+RAZORPAY_KEY_SECRET
+
+for server-side Razorpay operations.
+
+For testing, use Razorpay test-mode credentials.
+
+# 🔒 Security
+
+The application implements several security mechanisms:
+
+- JWT access and refresh tokens
+- HttpOnly cookies
+- Protected admin routes
+- CORS configuration
+- Environment-based secrets
+- Password hashing with Bcrypt
+- Server-side authentication checks
+- Separate frontend and backend credentials
+
+# 🤝 Contributions
+
+Pull requests are welcome.
+
+For major changes, please open an issue first to discuss the proposed changes.

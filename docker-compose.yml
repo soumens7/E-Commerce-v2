@@ -1,0 +1,21 @@
+services:
+  backend:
+    build:
+      context: ./server
+      args:
+        DATABASE_URL: ${DATABASE_URL}
+    ports:
+      - "4000:4000"
+    env_file:
+      - ./server/.env
+
+  frontend:
+    build:
+      context: ./client
+      args:
+        REACT_APP_API_URL: http://localhost:4000
+        REACT_APP_RAZORPAY_KEY_ID: ${REACT_APP_RAZORPAY_KEY_ID}
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend

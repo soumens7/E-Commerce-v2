@@ -4,7 +4,7 @@ A full-stack e-commerce web application built using React, Node.js, Express.js, 
 
 Check out the live version of the project [here](https://e-commerce-v2-peach.vercel.app/)
 
-![Website Demo](/Users/soumensarkar/Library/Application Support/BraveSoftware/Brave-Browser/Default/WebShare/share-0f0810fa-5fac-4515-8243-f7d6f93cefd1/\_gif)
+![Website Demo](https://media.giphy.com/media/w5PyNbZdeyqtYgtSFr/giphy.gif)
 
 [![CI](https://github.com/soumens7/E-Commerce-v2/actions/workflows/ci.yml/badge.svg)](https://github.com/soumens7/E-Commerce-v2/actions)
 

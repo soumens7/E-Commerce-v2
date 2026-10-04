@@ -2,9 +2,9 @@
 
 A full-stack e-commerce web application built using React, Node.js, Express.js, PostgreSQL, and Prisma. Features authentication, product display, category filtering, cart functionality, and secure token management.
 
-Check out the live version of the project [here](https://mern-e-commerce-app-tau.vercel.app/)
+Check out the live version of the project [here](https://e-commerce-v2-peach.vercel.app/)
 
-![Website Demo](https://media1.giphy.com/media/v1.Y2lkPTc5MGI3NjExNjFtMTU5djVtZmtvdDZ5enE1dm8yczE1d29iajlqbGx0bGw2YWhyMyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/vwuggOp6YZj2W9Z7H4/giphy.gif)
+![Website Demo](/Users/soumensarkar/Library/Application Support/BraveSoftware/Brave-Browser/Default/WebShare/share-0f0810fa-5fac-4515-8243-f7d6f93cefd1/\_gif)
 
 [![CI](https://github.com/soumens7/E-Commerce-v2/actions/workflows/ci.yml/badge.svg)](https://github.com/soumens7/E-Commerce-v2/actions)
 

@@ -133,7 +133,7 @@ The product listing API supports:
 - Price filtering
 - Sorting
 
-# 🛠️ Getting Started Locally
+## 🛠️ Getting Started Locally
 
 ## Clone project
 
@@ -153,7 +153,7 @@ cd ../server
 npm install  
 npm run dev
 
-# 🔐 Environment Variables
+## 🔐 Environment Variables
 
 ## client/.env
 
@@ -196,7 +196,7 @@ Open Prisma Studio:
 npx prisma studio
 ```
 
-# 🐳 Docker
+## 🐳 Docker
 
 The application is containerized using Docker.
 
@@ -280,7 +280,7 @@ docker compose logs -f frontend
               │ Neon PostgreSQL   │
               └──────────────────┘
 
-# 📦 Deployment
+## 📦 Deployment
 
 The application is containerized and deployed using Docker.
 
@@ -311,7 +311,7 @@ The application is containerized and deployed using Docker.
 
 GitHub Actions is used for continuous integration.
 
-# 💳 Razorpay
+## 💳 Razorpay
 
 The application integrates Razorpay for payment processing.
 
@@ -326,7 +326,7 @@ for server-side Razorpay operations.
 
 For testing, use Razorpay test-mode credentials.
 
-# 🔒 Security
+## 🔒 Security
 
 The application implements several security mechanisms:
 
@@ -339,7 +339,7 @@ The application implements several security mechanisms:
 - Server-side authentication checks
 - Separate frontend and backend credentials
 
-# 🤝 Contributions
+## 🤝 Contributions
 
 Pull requests are welcome.
 

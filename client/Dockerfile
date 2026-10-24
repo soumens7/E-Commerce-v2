@@ -1,6 +1,9 @@
-FROM node:22-alpine AS build
+FROM node:22.23.4-alpine AS build
 
 WORKDIR /app
+
+RUN apk add --no-cache ca-certificates \
+    && update-ca-certificates
 
 COPY package*.json ./
 
@@ -17,6 +20,9 @@ ENV REACT_APP_RAZORPAY_KEY_ID=$REACT_APP_RAZORPAY_KEY_ID
 RUN npm run build
 
 FROM nginx:alpine
+
+RUN apk add --no-cache ca-certificates \
+    && update-ca-certificates
 
 COPY --from=build /app/build /usr/share/nginx/html
 

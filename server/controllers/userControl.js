@@ -2,6 +2,14 @@ const prisma = require("../config/prisma"); // Importing the User model
 const bcrypt = require("bcrypt"); // Importing bcrypt for password hashing
 const jwt = require("jsonwebtoken"); // Importing JSON Web Token for authentication
 
+const refreshCookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: "lax",
+  path: "/user/refresh_token",
+  maxAge: 7 * 24 * 60 * 60 * 1000,
+};
+
 const userControl = {
   // Controller function for user registration
   register: async (req, res) => {
@@ -43,22 +51,18 @@ const userControl = {
       // Create JWT access and refresh tokens
       const accessToken = createAccessToken({ id: newUser.id });
       const refreshToken = createRefreshToken({ id: newUser.id });
-      console.log("Setting cookie with refreshToken:", refreshToken);
+
       // Store refresh token in HTTP-only cookie for security
-      // res.cookie("refreshtoken", refreshToken, {
-      //   httpOnly: true,
-      //   secure: true, // Required for HTTPS
-      //   sameSite: "None", // Required for cross-origin with HTTPS,
-      //   // domain: "mern-e-commerce-app-df8a.onrender.com",
-      //   path: "/user/refresh_token",
-      //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      // });
+      res.cookie("refreshtoken", refreshToken, refreshCookieOptions);
 
       // // Send access token in response
-      // res.json({ accessToken });
-      res.json({ accessToken, refreshToken });
+      res.json({ accessToken });
+      // res.json({ accessToken, refreshToken });
     } catch (err) {
-      return res.status(500).json({ msg: err.message }); // Handle errors
+      console.error("Registration error:", err);
+      return res
+        .status(500)
+        .json({ msg: "Something went wrong. Please try again" }); // Handle errors
     }
   },
 
@@ -66,25 +70,40 @@ const userControl = {
   refreshToken: async (req, res) => {
     try {
       // Retrieve refresh token from cookies
-      const rf_token = req.header("Authorization")?.replace("Bearer ", "");
-      console.log("Cookies received:", req.cookies);
+      const rf_token = req.cookies?.refreshtoken;
+
       // Check if refresh token exists
       if (!rf_token)
         return res.status(401).json({ msg: "Please login or register" });
 
       // Verify the refresh token
-      jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-        if (err)
-          return res
-            .status(401)
-            .json({ msg: "Invalid token, please login again." });
-
-        // Generate new access token
-        const accessToken = createAccessToken({ id: user.id });
-        res.json({ accessToken });
+      const decoded = jwt.verify(rf_token, process.env.REFRESH_TOKEN_SECRET);
+      if (!decoded.id) {
+        return res
+          .status(401)
+          .json({ msg: "Invalid token, please login again." });
+      }
+      const user = await prisma.user.findUnique({
+        where: { id: decoded.id },
+        select: { id: true },
       });
+      if (!user) {
+        return res.status(401).json({ msg: "User no longer exist." });
+      }
+      // Generate new access token
+      const accessToken = createAccessToken({ id: user.id });
+      return res.json({ accessToken });
     } catch (err) {
-      return res.status(500).json({ msg: err.message });
+      if (
+        err.name === "JsonWebTokenError" ||
+        err.name === "TokenExpiredError" ||
+        err.name === "NotBeforeError"
+      ) {
+        return res
+          .status(401)
+          .json({ msg: "Invalid or expired refresh token" });
+      }
+      return res.status(500).json({ msg: "Internal server error" });
     }
   },
 
@@ -110,22 +129,16 @@ const userControl = {
       const accessToken = createAccessToken({ id: user.id });
       const refreshToken = createRefreshToken({ id: user.id });
 
-      console.log("Setting cookie with refreshToken:", refreshToken);
       // Store refresh token in HTTP-only cookie
-      // res.cookie("refreshtoken", refreshToken, {
-      //   httpOnly: true,
-      //   secure: true, // Required for HTTPS
-      //   sameSite: "None", // Required for cross-origin with HTTPS,
-      //   // domain: "mern-e-commerce-app-df8a.onrender.com",
-      //   path: "/user/refresh_token",
-      //   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
-      // });
+      res.cookie("refreshtoken", refreshToken, refreshCookieOptions);
 
       // // Send access token in response
-      // res.json({ accessToken });
-      res.json({ accessToken, refreshToken });
+      res.json({ accessToken });
     } catch (err) {
-      return res.status(500).json({ msg: err.message }); // Handle errors
+      console.error("Login error:", err);
+      return res
+        .status(500)
+        .json({ msg: "Something went wrong. Please try again" }); // Handle errors
     }
   },
 
@@ -133,10 +146,13 @@ const userControl = {
   logout: async (req, res) => {
     try {
       // Clear the refresh token from cookies
-      res.clearCookie("refreshtoken", { path: "/user/refresh_token" });
+      res.clearCookie("refreshtoken", {
+        ...refreshCookieOptions,
+        maxAge: undefined,
+      });
       return res.json({ msg: "Logged out!" });
     } catch (err) {
-      return res.status(500).json({ msg: err.message }); // Handle errors
+      return res.status(500).json({ msg: "Internal server error" }); // Handle errors
     }
   },
 
@@ -195,7 +211,7 @@ const userControl = {
 // Function to create JWT access token
 const createAccessToken = (payload) => {
   return jwt.sign(payload, process.env.ACCESS_TOKEN_SECRET, {
-    expiresIn: "1d", // Access token expires in 1 day
+    expiresIn: "15m", // Access token expires in 15 mins
   });
 };
 

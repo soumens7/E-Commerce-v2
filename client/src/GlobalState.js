@@ -27,7 +27,7 @@ export const DataProvider = ({ children }) => {
         }
       );
 
-      console.log("Refresh token response:", res.data);
+      //console.log("Refresh token response:", res.data);
       if (res.data.accessToken) {
         setToken(res.data.accessToken); // Set token state to the new access token
         localStorage.setItem("access_token", res.data.accessToken); // Store access token in local storage

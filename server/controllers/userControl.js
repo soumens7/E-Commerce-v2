@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken"); // Importing JSON Web Token for authenticat
 const refreshCookieOptions = {
   httpOnly: true,
   secure: process.env.NODE_ENV === "production",
-  sameSite: "lax",
+  sameSite: "none",
   path: "/user/refresh_token",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };

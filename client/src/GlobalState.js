@@ -12,47 +12,45 @@ axios.defaults.withCredentials = true;
 export const DataProvider = ({ children }) => {
   const [token, setToken] = useState(false);
 
-  const refreshToken = async () => {
-    try {
-      console.log("Attempting to refresh token...");
-      const refreshToken = localStorage.getItem("refresh_token");
-      const res = await axios.post(
-        "/user/refresh_token",
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${refreshToken}`,
-          },
-          // withCredentials is now set by defaults
-        }
-      );
-
-      //console.log("Refresh token response:", res.data);
-      if (res.data.accessToken) {
-        setToken(res.data.accessToken); // Set token state to the new access token
-        localStorage.setItem("access_token", res.data.accessToken); // Store access token in local storage
-      } else {
-        localStorage.removeItem("firstLogin"); // Remove firstLogin if no access token
-        setToken(false); // Set token to false if no access token is received
-      }
-    } catch (error) {
-      console.error("Refresh token error:", {
-        message: error.message,
-        response: error.response?.data,
-        config: error.config,
-      });
-      localStorage.removeItem("firstLogin"); // Remove firstLogin if there's an error
-      setToken(false);
-    }
-  };
-
   useEffect(() => {
-    const firstLogin = localStorage.getItem("firstLogin");
-    if (firstLogin) {
-      if (!token) refreshToken();
-    }
-  }, [token]); // Remove token from dependency to prevent infinite loop
+    const restoreSession = async () => {
+      const firstLogin = localStorage.getItem("firstLogin");
 
+      if (!firstLogin) return;
+
+      try {
+        console.log("Attempting to restore session...");
+
+        // Browser sends the HttpOnly refresh cookie automatically.
+        const res = await axios.post("/user/refresh_token");
+
+        if (res.data.accessToken) {
+          setToken(res.data.accessToken);
+          localStorage.setItem("access_token", res.data.accessToken);
+        } else {
+          setToken(false);
+          localStorage.removeItem("firstLogin");
+          localStorage.removeItem("access_token");
+        }
+      } catch (error) {
+        console.error("Session restoration failed:", {
+          status: error.response?.status,
+          response: error.response?.data,
+          message: error.message,
+        });
+
+        setToken(false);
+        localStorage.removeItem("access_token");
+
+        // A 401 means the refresh cookie is missing, invalid or expired.
+        if (error.response?.status === 401) {
+          localStorage.removeItem("firstLogin");
+        }
+      }
+    };
+
+    restoreSession();
+  }, []);
   const state = {
     token: [token, setToken],
     productsAPI: ProductAPI(token),
